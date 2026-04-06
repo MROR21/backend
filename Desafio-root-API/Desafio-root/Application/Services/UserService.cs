@@ -25,6 +25,8 @@ namespace Desafio_root.Application.Services
             var emailValidate = Email.Create(dto.Email);
             var user = await _repository.GetByEmailAsync(emailValidate.Value);
 
+            bool isNew = false;
+
             if (user != null)
             {
                 if (!user.Name.Equals(dto.Name, StringComparison.OrdinalIgnoreCase))
@@ -36,6 +38,7 @@ namespace Desafio_root.Application.Services
             {
                 user = User.Create(dto.Name, emailValidate);
                 await _repository.AddAsync(user);
+                isNew = true;
             }
 
             var token = GenerateJwtToken(user);
@@ -45,7 +48,8 @@ namespace Desafio_root.Application.Services
                 user.Id,
                 user.Name,
                 user.Email.Value,
-                token 
+                token,
+                isNew
             );
         }
 
@@ -67,7 +71,7 @@ namespace Desafio_root.Application.Services
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature
                 ),
-                Issuer = _config["Jwt:Issuer"],
+                Issuer = _config["Jwt:Issuer"], 
                 Audience = _config["Jwt:Audience"]
             };
 
